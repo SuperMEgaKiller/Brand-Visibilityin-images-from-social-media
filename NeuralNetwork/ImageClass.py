@@ -32,8 +32,9 @@ class ImageProcessing(object):
         :return: None
         """
         for picture in args:
-            if self.Valid(picture):
-                self.listOfImages.append(picture.strip())
+            if not self.Valid(picture):
+                self.resizeImage(picture)
+            self.listOfImages.append(picture)
 
     def showHead(self):
         """
@@ -50,8 +51,11 @@ class ImageProcessing(object):
             tmpImage = Image.open(self.listOfImages[index], 'r')
             tmpImage.show()
 
-    def Valid(self, name: str) -> bool:
+    def Valid(self, name: str) -> bool: # tutaj poprostu podajemy jakiego typu oczekujemy wartosc 'name' 
+        #i co zwraca ta funkcja czyli True or False
+        
         assert (isinstance(name, str) and name.endswith('.jpg')), ' Invalid Input Argument'
+        
         tmpPicture = Image.open(name, 'r')
         w, h = tmpPicture.size
 
@@ -70,23 +74,19 @@ class ImageProcessing(object):
         creates Matrix (number of pictures, 989 * 989) of one RGB Colour
         :return: self.ColourMatrix - matrix of RGB pixels values for every Image
         """
-        self.numOfImages = len(self.listOfImages)  # Nr of images
         self.ColourMatrix = np.empty((0, self.lenOfPixels), dtype=np.uint8)  # Matrix of pixels values for every picture
 
         for picture in self.listOfImages:
             tmpPicture = Image.open(picture, 'r')  # Open the Image
             R, G, B = tmpPicture.split()
 
-            Colour = np.array({
+            Colour = np.array({ 
                 'red': R,
                 'green': G,
                 'blue': B
             }.get(color, 'Wrong Color'))
-            Colour = np.reshape(Colour, (len(self.listOfImages), self.lenOfPixels))
-            self.ColourMatrix = np.append(self.ColourMatrix, Colour, axis=0)
-
-        # розібратися з єбаними розмірами тих векторів
-        # update: розібрався з тими єбаними векторами
+            Colour = np.reshape(Colour, (len(self.listOfImages), self.lenOfPixels)) # reshape the numpy array 
+            self.ColourMatrix = np.append(self.ColourMatrix, Colour, axis=0)    # append to OUT array of pixels for every Image
 
         return self.ColourMatrix  # return Matrix of pixels
 
