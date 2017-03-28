@@ -11,8 +11,8 @@ class ImageProcessing(object):
     """
 
     """
-    Wight = 989
-    Height = 989
+    Wight = 720
+    Height = 720
 
     def __init__(self, *args):  # as INPUT take a list of Images Names
         """
@@ -21,7 +21,9 @@ class ImageProcessing(object):
         self.lenOfPixels = ImageProcessing.Wight * ImageProcessing.Height
         self.listOfImages = list()
         for picture in args:
-            self.listOfImages.append(picture.strip())
+            if not self.Valid(picture):
+                self.resizeImage(picture)
+            self.listOfImages.append(picture)
 
     def addImages(self, *args):
         """
@@ -30,7 +32,8 @@ class ImageProcessing(object):
         :return: None
         """
         for picture in args:
-            self.listOfImages.append(picture.strip())
+            if self.Valid(picture):
+                self.listOfImages.append(picture.strip())
 
     def showHead(self):
         """
@@ -38,6 +41,7 @@ class ImageProcessing(object):
         if List size less than 5 show all Images
         :return: None
         """
+        assert (len(self.listOfImages) != 0), "Theres no Images to show"
         tmp = 5  # number of images to show
         if len(self.listOfImages) < tmp:  # check is number of Images is less than 5
             tmp = len(self.listOfImages)
@@ -46,38 +50,48 @@ class ImageProcessing(object):
             tmpImage = Image.open(self.listOfImages[index], 'r')
             tmpImage.show()
 
-    def IsValid(self):
-        """
-        Check all sizes of Images
-        :return: None
-        """
-        for picture in self.listOfImages:
-            tmpImg = Image.open(picture, 'r')
-            w, h = tmpImg.size
-            if w != ImageProcessing.Wight or h != ImageProcessing.Height:
-                print("{} has Invalid Size".format(picture))
+    def Valid(self, name: str) -> bool:
+        assert (isinstance(name, str) and name.endswith('.jpg')), ' Invalid Input Argument'
+        tmpPicture = Image.open(name, 'r')
+        w, h = tmpPicture.size
 
+        return w * h == self.lenOfPixels  # True if size of read Image is equal to expected
 
-    def getPixels(self):
+    def resizeImage(self, name: str) -> None:
+        openImg = Image.open(name, 'r')
+        print('Image old sie {} {}'.format(name, openImg.size))
+        newImg = openImg.resize((ImageProcessing.Wight, ImageProcessing.Height))
+        #newImg.save(str(ImageProcessing.Wight) + 'x' + str(ImageProcessing.Height) + name)
+        print('Image new sie {} {}'.format(name, newImg.size))
+        newImg.save(name)
+
+    def getRGBColour(self, color = 'red'):
         """
-        creates Matrix (number of pictures, 989 * 989, 3)
-        :return: self.ImagesMatrix - matrix of pixels values for every Image
+        creates Matrix (number of pictures, 989 * 989) of one RGB Colour
+        :return: self.ColourMatrix - matrix of RGB pixels values for every Image
         """
         self.numOfImages = len(self.listOfImages)  # Nr of images
-        self.ImagesMatrix = np.empty((0, self.lenOfPixels, 3),
-                                     dtype=np.int32)  # Matrix of pixels values for every picture
+        self.ColourMatrix = np.empty((0, self.lenOfPixels), dtype=np.uint8)  # Matrix of pixels values for every picture
 
         for picture in self.listOfImages:
             tmpPicture = Image.open(picture, 'r')  # Open the Image
-            pixelsMatrix = np.array(tmpPicture.getdata())  # create a new numpy array of Picture values
-            pixelsMatrix = np.reshape(pixelsMatrix, (1, self.lenOfPixels, 3))  # resize matrix to shape (1, 989 * 989)
-            self.ImagesMatrix = np.append(self.ImagesMatrix, pixelsMatrix, axis=0)
+            R, G, B = tmpPicture.split()
+
+            Colour = np.array({
+                'red': R,
+                'green': G,
+                'blue': B
+            }.get(color, 'Wrong Color'))
+            Colour = np.reshape(Colour, (len(self.listOfImages), self.lenOfPixels))
+            self.ColourMatrix = np.append(self.ColourMatrix, Colour, axis=0)
+
         # розібратися з єбаними розмірами тих векторів
         # update: розібрався з тими єбаними векторами
 
-        return self.ImagesMatrix  # return Matrix of pixels
+        return self.ColourMatrix  # return Matrix of pixels
+
 
 
 if __name__ == '__main__':
-    New = ImageProcessing('godzilla.jpg', 'ggg.jpg')
-    New.addImages('godzilla.jpg')
+    New = ImageProcessing('godzilla.jpg', 'nike2.jpg')
+    New.showHead()
