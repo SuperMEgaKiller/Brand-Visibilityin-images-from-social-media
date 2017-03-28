@@ -71,7 +71,7 @@ class ImageProcessing(object):
 
     def getRGBColour(self, color = 'red'):
         """
-        creates Matrix (number of pictures, 989 * 989) of one RGB Colour
+        creates Matrix (number of pictures, Wight * Height) of one RGB Colour
         :return: self.ColourMatrix - matrix of RGB pixels values for every Image
         """
         self.ColourMatrix = np.empty((0, self.lenOfPixels), dtype=np.uint8)  # Matrix of pixels values for every picture
