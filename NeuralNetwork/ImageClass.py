@@ -13,12 +13,14 @@ class ImageProcessing(object):
     """
     Wight = 720
     Height = 720
+    imgLen = Wight * Height
+    RGB = 3
+    inputLen = imgLen * RGB
 
     def __init__(self, *args):  # as INPUT take a list of Images Names
         """
         :param args: # list of Images Names
         """
-        self.lenOfPixels = ImageProcessing.Wight * ImageProcessing.Height
         self.listOfImages = list()
         for picture in args:
             if not self.Valid(picture):
@@ -55,11 +57,10 @@ class ImageProcessing(object):
         #i co zwraca ta funkcja czyli True or False
         
         assert (isinstance(name, str) and name.endswith('.jpg')), ' Invalid Input Argument'
-        
         tmpPicture = Image.open(name, 'r')
         w, h = tmpPicture.size
 
-        return w * h == self.lenOfPixels  # True if size of read Image is equal to expected
+        return w * h == ImageProcessing.imgLen  # True if size of read Image is equal to expected
 
     def resizeImage(self, name: str) -> None:
         openImg = Image.open(name, 'r')
@@ -69,26 +70,23 @@ class ImageProcessing(object):
         print('Image new sie {} {}'.format(name, newImg.size))
         newImg.save(name)
 
-    def getRGBColour(self, color = 'red'):
+    def getRGBMatrix(self):
         """
-        creates Matrix (number of pictures, Wight * Height) of one RGB Colour
-        :return: self.ColourMatrix - matrix of RGB pixels values for every Image
+        creates Matrix (number of pictures, Wight * Height * 3) 
+        :return: self.RGBMatrix - RGB matrix of all pixels for every Image 
         """
-        self.ColourMatrix = np.empty((0, self.lenOfPixels), dtype=np.uint8)  # Matrix of pixels values for every picture
+
+        self.RGBMatrix = np.empty((0, ImageProcessing.inputLen), dtype=np.int32)  # Matrix of pixels values for every picture
 
         for picture in self.listOfImages:
             tmpPicture = Image.open(picture, 'r')  # Open the Image
             R, G, B = tmpPicture.split()
-
-            Colour = np.array({ 
-                'red': R,
-                'green': G,
-                'blue': B
-            }.get(color, 'Wrong Color'))
-            Colour = np.reshape(Colour, (len(self.listOfImages), self.lenOfPixels)) # reshape the numpy array 
-            self.ColourMatrix = np.append(self.ColourMatrix, Colour, axis=0)    # append to OUT array of pixels for every Image
-
-        return self.ColourMatrix  # return Matrix of pixels
+            r = np.reshape(R,(1, ImageProcessing.imgLen)); g = np.reshape(G,(1, ImageProcessing.imgLen)); b = np.reshape(B,(1, ImageProcessing.imgLen))
+            rgb = np.concatenate((r, g, b), axis=1)
+            #Colour = np.reshape(Colour, (len(self.listOfImages), self.lenOfPixels))
+            self.RGBMatrix = np.append(self.RGBMatrix, rgb, axis=0)
+            
+        return self.RGBMatrix  # return Matrix of pixels
 
 
 
